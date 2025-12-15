@@ -6,59 +6,82 @@
 //
 
 // bu versiyona, game over eklendi, ve çalışırsa eğer restart modu geldi. hadi bakalım.
+// bu versiyona skor eklendi, yüksek skor kayıt ediliyor. Yeni rekor, yeni yüksek rekor ve kayıtlı.
 
 import SpriteKit
 import GameplayKit
 
-class GameScene: SKScene, SKPhysicsContactDelegate {
+class GameScene: SKScene, SKPhysicsContactDelegate
+{
     
     var player: PlayerNode?
+    var scoreLabel: SKLabelNode!
     
-    // Oyun durumunu takip etmek için bir değişken
     var isGameOver = false
     
-    // Zamanlayıcılar
+    //SKOR DEĞİŞKENLERİ
+    var score = 0
+    {
+        didSet
+        {
+            scoreLabel.text = "\(score)"
+            // Skor değiştiği an ekrandaki yazıyı güncelle
+        }
+    }
+    
     var lastUpdateTime: TimeInterval = 0
     var obstacleSpawnRate: TimeInterval = 1.5
     var timeSinceLastSpawn: TimeInterval = 0
     
-    override func didMove(to view: SKView) {
-        // ÇÖZÜM BURADA: Merkez noktasını hep ekranın ortası (0.5, 0.5) yapıyoruz.
-        self.anchorPoint = CGPoint(x: 0.5, y: 0.5) //umarım restart edince her şey birbirine girmez bu sefer.
-                
+    override func didMove(to view: SKView)
+    {
+        // Koordinat düzeltmesi
+        self.anchorPoint = CGPoint(x: 0.5, y: 0.5)
         self.backgroundColor = .black
         
-        
-        // Çarpışma Dedektifini Aktif Et
         physicsWorld.contactDelegate = self
-        
-        // Yerçekimi
         physicsWorld.gravity = CGVector(dx: 0, dy: -12.0)
         
         createWalls()
         addPlayer()
+        setupScoreLabel() // Skoru ekrana koyan fonksiyonu çağır
     }
     
-    func createWalls() {
+    func setupScoreLabel()
+    {
+        scoreLabel = SKLabelNode(fontNamed: "Orbitron-Bold")
+        scoreLabel.text = "0"
+        scoreLabel.fontSize = 60
+        scoreLabel.fontColor = .white.withAlphaComponent(0.5) // Hafif saydam olsun, göz yormasın
+        
+        scoreLabel.position = CGPoint(x: 0, y: self.size.height / 2 - 160) // ekranın en tepesinde olması sorun yarattı, biraz daha ortalıyoruz.
+        scoreLabel.zPosition = 5 // Engellerin arkasında, arka planın önünde
+        addChild(scoreLabel)
+    }
+    
+    func createWalls()
+    {
         self.physicsBody = SKPhysicsBody(edgeLoopFrom: self.frame)
         self.physicsBody?.friction = 0.0
         self.physicsBody?.categoryBitMask = PhysicsCategories.ground
     }
     
-    func addPlayer() {
+    func addPlayer()
+    {
         player = PlayerNode(width: 50)
         player?.position = CGPoint(x: -self.size.width / 3, y: 0)
-        if let playerNode = player {
+        if let playerNode = player
+        {
             addChild(playerNode)
         }
     }
     
-    func spawnObstacle() {
-        // Eğer oyun bittiyse yeni engel üretme
+    func spawnObstacle()
+    {
         if isGameOver { return }
         
         let obstacleWidth: CGFloat = 40
-        let obstacleHeight: CGFloat = 100
+        let obstacleHeight: CGFloat = 150 // Biraz daha uzattım zor olsun 100->120->150
         
         let obstacle = ObstacleNode(width: obstacleWidth, height: obstacleHeight)
         
@@ -69,87 +92,112 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         obstacle.position = CGPoint(x: startX, y: yPos)
         addChild(obstacle)
         
-        let moveLeft = SKAction.moveBy(x: -(self.size.width + obstacleWidth * 2), y: 0, duration: 4.0)
+        // HAREKET VE SKOR MANTIĞI
+        let moveLeft = SKAction.moveBy(x: -(self.size.width + obstacleWidth * 2), y: 0, duration: 3.5)
+        
+        // Engel ekranı terk ettiğinde çalışacak kod bloğu:
+        let scoreAction = SKAction.run
+        {
+            if !self.isGameOver {
+                self.score += 1 // Skoru artır
+                // Belki bir "bip" sesi çalarız burada ileride
+            }
+        }
+        
         let remove = SKAction.removeFromParent()
         
-        obstacle.run(SKAction.sequence([moveLeft, remove]))
+        // Sırayla: Git -> Skoru Artır -> Kendini Yok Et
+        obstacle.run(SKAction.sequence([moveLeft, scoreAction, remove]))
     }
     
-    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        // 1. Durum: Oyun bittiyse, tıklayınca yeniden başlat
-        if isGameOver {
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?)
+    {
+        if isGameOver
+        {
             restartGame()
             return
         }
         
-        // 2. Durum: Oyun devam ediyorsa yerçekimini çevir
         physicsWorld.gravity.dy *= -1
         player?.physicsBody?.applyImpulse(CGVector(dx: 0, dy: physicsWorld.gravity.dy * 2))
     }
     
-    // Çarpışma Algılayıcı
-    func didBegin(_ contact: SKPhysicsContact) {
+    func didBegin(_ contact: SKPhysicsContact)
+    {
         let collision = contact.bodyA.categoryBitMask | contact.bodyB.categoryBitMask
         
-        if collision == (PhysicsCategories.player | PhysicsCategories.obstacle) {
+        if collision == (PhysicsCategories.player | PhysicsCategories.obstacle)
+        {
             triggerGameOver()
         }
     }
     
-    func triggerGameOver() {
-        // Zaten oyun bittiyse tekrar çalıştırma (bazen üst üste tetiklenebilir)
+    func triggerGameOver()
+    {
         if isGameOver { return }
         
         isGameOver = true
-        print("OYUN BİTTİ")
         
-        // 1. Oyuncuyu Kırmızı Yap
         player?.fillColor = .red
-        
-        // 2. Sahnedeki her şeyi durdur (Engeller dursun)
-        // self.isPaused = true // Bunu yaparsak her şey donar, Restart yazısı da çıkmaz.
-        // O yüzden sadece engellerin hızını 0 yapıyoruz:
         self.enumerateChildNodes(withName: "Obstacle") { node, _ in
             node.removeAllActions()
         }
-        player?.physicsBody?.velocity = CGVector(dx: 0, dy: 0) // Oyuncuyu dondur
+        player?.physicsBody?.velocity = CGVector(dx: 0, dy: 0)
         
-        // 3. Ekrana "GAME OVER" Yazısı Ekle
-        let gameOverLabel = SKLabelNode(fontNamed: "Helvetica-Bold")
+        // --- HIGH SCORE KAYDETME ---
+        // Telefon hafızasından eski rekoru çek
+        let highScore = UserDefaults.standard.integer(forKey: "HighScore")
+        
+        if score > highScore
+        {
+            // Yeni rekor! Hafızaya kaydet.
+            UserDefaults.standard.set(score, forKey: "HighScore")
+        }
+        
+        //  EKRANA YAZDIRMA
+        let gameOverLabel = SKLabelNode(fontNamed: "AvenirNext-Bold")
         gameOverLabel.text = "GAME OVER"
-        gameOverLabel.fontSize = 60
+        gameOverLabel.fontSize = 50
         gameOverLabel.fontColor = .white
         gameOverLabel.position = CGPoint(x: 0, y: 50)
-        gameOverLabel.zPosition = 10 // Her şeyin üstünde görünsün
+        gameOverLabel.zPosition = 10
         addChild(gameOverLabel)
         
-        // 4. "Tap to Restart" Yazısı Ekle
-        let restartLabel = SKLabelNode(fontNamed: "Helvetica")
+        let scoreInfoLabel = SKLabelNode(fontNamed: "AvenirNext-Regular")
+        scoreInfoLabel.text = "Score: \(score)  •  Best: \(max(score, highScore))"
+        scoreInfoLabel.fontSize = 25
+        scoreInfoLabel.fontColor = .cyan // Neon mavisi
+        scoreInfoLabel.position = CGPoint(x: 0, y: 0)
+        scoreInfoLabel.zPosition = 10
+        addChild(scoreInfoLabel)
+        
+        let restartLabel = SKLabelNode(fontNamed: "AvenirNext-Regular")
         restartLabel.text = "Tap to Restart"
-        restartLabel.fontSize = 30
+        restartLabel.fontSize = 20
         restartLabel.fontColor = .yellow
-        restartLabel.position = CGPoint(x: 0, y: -50)
+        restartLabel.position = CGPoint(x: 0, y: -60)
         restartLabel.zPosition = 10
+        restartLabel.run(SKAction.repeatForever(SKAction.sequence([SKAction.fadeOut(withDuration: 0.5), SKAction.fadeIn(withDuration: 0.5)]))) // Yanıp sönme efekti
         addChild(restartLabel)
     }
     
-    func restartGame() {
-        // Sahneyi sıfırdan oluştur ve geçiş yap
-        if let view = self.view {
-            // Yeni bir sahne yarat
+    func restartGame()
+    {
+        if let view = self.view
+        {
             let newScene = GameScene(size: self.size)
             newScene.scaleMode = self.scaleMode
-            
-            // Animasyonlu geçiş (Kapı gibi açılsın)
-            let transition = SKTransition.doorsOpenHorizontal(withDuration: 0.5)
+            let transition = SKTransition.fade(withDuration: 0.5)
             view.presentScene(newScene, transition: transition)
         }
     }
     
-    override func update(_ currentTime: TimeInterval) {
+    override func update(_ currentTime: TimeInterval)
+    {
         if isGameOver { return }
         
-        if lastUpdateTime == 0 {
+        if lastUpdateTime == 0
+        {
             lastUpdateTime = currentTime
         }
         
@@ -161,6 +209,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if timeSinceLastSpawn > obstacleSpawnRate {
             spawnObstacle()
             timeSinceLastSpawn = 0
+            
+            // Oyun ilerledikçe zorlaşabilir, şu aşamada gerek yok.
+            // obstacleSpawnRate *= 0.98 // Her engel çıktığında süre %2 kısalsın
         }
     }
 }
