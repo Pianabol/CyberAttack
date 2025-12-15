@@ -7,54 +7,55 @@
 
 import Foundation
 
+
 import SpriteKit
 
-class PlayerNode: SKShapeNode
-{
+// DİKKAT: Artık SKShapeNode değil, SKSpriteNode kullanıyoruz!
+class PlayerNode: SKSpriteNode {
     
-    // Player'ı oluştururken çalışacak fonksiyon
-    init(width: CGFloat)
-    {
-        // 1. Şekil Oluşturma: Bir kare çiziyoruz
+    // init fonksiyonu artık resim adını da alıyor
+    init(imageNamed: String, width: CGFloat) {
+        // Görseli yükle
+        let texture = SKTexture(imageNamed: imageNamed)
+        // Görselin boyutunu ayarla (kare olacak şekilde)
         let size = CGSize(width: width, height: width)
-        super.init()
         
-        // Kare şeklini path olarak tanımla
-        self.path = CGPath(rect: CGRect(origin: CGPoint(x: -width/2, y: -width/2), size: size), transform: nil)
+        // SKSpriteNode'un kendi başlatıcısını çağır
+        super.init(texture: texture, color: .clear, size: size)
         
-        // 2. Görsel Ayarlar (Neon Teması)
-        self.fillColor = .cyan           // İçi camgöbeği (Neon mavisi)
-        self.strokeColor = .white        // Kenarları beyaz
-        self.lineWidth = 2.0             // Kenar kalınlığı
-        self.glowWidth = 5.0             // !Parıldama Efekti! (Neon hissi veren bu)
+        // DEĞİŞİKLİK BURADA
+                // Virüsün dikenlerini saymayalım, sadece gövdesi çarpınca yansın.
+                // Kutuyu %50 oranında küçülttüm.
+                let hitboxSize = CGSize(width: width * 0.5, height: width * 0.5)
+                
+                self.physicsBody = SKPhysicsBody(rectangleOf: hitboxSize)
+                
         
-        // 3. Fizik Ayarları (Yerçekimi ve Çarpışma)
+        /*
+        // Görsel Ayarlar (Neon Efekti Kodla Değil, Resimden Geliyor)
+        // Ancak hafif bir ekstra parlama ekleyebiliriz (Opsiyonel)
+        // self.color = .cyan
+        // self.colorBlendFactor = 0.2
+         */
+        
+        // 3. Fizik Ayarları (Aynen kalıyor)
+        // Virüsün şekline göre değil, yine basit bir kare fizik alanı kullanıyoruz (Performans için)
         self.physicsBody = SKPhysicsBody(rectangleOf: size)
-        self.physicsBody?.isDynamic = true           // Fizik kurallarına uysun mu? Evet.
-        self.physicsBody?.allowsRotation = false     // Yuvarlanmasın, dik kalsın.
-        self.physicsBody?.friction = 0.0             // Sürtünme yok (Kaymak gibi gitsin)
-        self.physicsBody?.restitution = 0.0          // Zıplama yok (Yere yapışsın)
-        self.physicsBody?.linearDamping = 0.0        // Hava direnci yok
+        self.physicsBody?.isDynamic = true
+        self.physicsBody?.allowsRotation = false
+        self.physicsBody?.friction = 0.0
+        self.physicsBody?.restitution = 0.0
+        self.physicsBody?.linearDamping = 0.0
         
-        // 1. Benim kategorim (Kimliğim) ne? -> Player
         self.physicsBody?.categoryBitMask = PhysicsCategories.player
-                
-        // 2. Kiminle çarpışınca fiziksel tepki vereyim? (Takılayım/İteyim) -> Zemin (Ground)
-        // (Engellere fiziksel çarpmasın, içinden geçerken oyun bitsin istiyorsak buraya obstacle yazmayız.
-        // Ama "küt" diye çarpması için obstacle da ekleyebilirim. Şimdilik sadece ground kalsın.)
         self.physicsBody?.collisionBitMask = PhysicsCategories.ground
-                
-        // 3. Kiminle temas edince "Haber Ver"? -> Engel (Obstacle)
-        // (Fiziksel çarpışmasa bile dokunduğu an GameScene'e haber uçurur)
         self.physicsBody?.contactTestBitMask = PhysicsCategories.obstacle
         
-        // İsimlendirme (Daha sonra kodda bulmak için)
         self.name = "Player"
+        self.zPosition = 2 // Engellerin önünde görünsün
     }
     
-    // Bu kısım zorunlu (Swift'in kuralı)
-    required init?(coder aDecoder: NSCoder)
-    {
+    required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 }
