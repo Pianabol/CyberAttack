@@ -7,11 +7,11 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		BA2AC52C2EF0889F00AF7190 /* The Runaway.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "The Runaway.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		BA620CF32EF08E8600EED463 /* The Runaway.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = "The Runaway.app"; path = "/Users/furkantuc/Desktop/Xcode/The Runaway/build/Debug-iphoneos/The Runaway.app"; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		BA2AC52E2EF0889F00AF7190 /* The Runaway */ = {
+		BA620CE72EF08D8F00EED463 /* The Runaway */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = "The Runaway";
 			sourceTree = "<group>";
@@ -32,17 +32,8 @@
 		BA2AC5232EF0889F00AF7190 = {
 			isa = PBXGroup;
 			children = (
-				BA2AC52E2EF0889F00AF7190 /* The Runaway */,
-				BA2AC52D2EF0889F00AF7190 /* Products */,
+				BA620CE72EF08D8F00EED463 /* The Runaway */,
 			);
-			sourceTree = "<group>";
-		};
-		BA2AC52D2EF0889F00AF7190 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				BA2AC52C2EF0889F00AF7190 /* The Runaway.app */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -61,13 +52,13 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				BA2AC52E2EF0889F00AF7190 /* The Runaway */,
+				BA620CE72EF08D8F00EED463 /* The Runaway */,
 			);
 			name = "The Runaway";
 			packageProductDependencies = (
 			);
 			productName = "The Runaway";
-			productReference = BA2AC52C2EF0889F00AF7190 /* The Runaway.app */;
+			productReference = BA620CF32EF08E8600EED463 /* The Runaway.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -95,7 +86,7 @@
 			mainGroup = BA2AC5232EF0889F00AF7190;
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
-			productRefGroup = BA2AC52D2EF0889F00AF7190 /* Products */;
+			productRefGroup = BA2AC5232EF0889F00AF7190;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
