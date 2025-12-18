@@ -19,8 +19,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var background: SKSpriteNode! // Arka planı tutacak değişken
     
     var isGameOver = false
-    var score = 0 {
-        didSet {
+    var score = 0
+    {
+        didSet
+        {
             scoreLabel.text = "\(score)"
         }
     }
@@ -29,7 +31,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var obstacleSpawnRate: TimeInterval = 1.5
     var timeSinceLastSpawn: TimeInterval = 0
     
-    override func didMove(to view: SKView) {
+    override func didMove(to view: SKView)
+    {
         self.anchorPoint = CGPoint(x: 0.5, y: 0.5)
         // Siyah arka plan satırını sildik!
         
@@ -43,18 +46,20 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         setupScoreLabel()
     }
     
-    func createBackground() {
-        // YENİ FONKSİYON: Arka plan görselini yükle
+    func createBackground()
+    {
+        // arka plan görseli (deneme)
         background = SKSpriteNode(imageNamed: "bg_cyber")
-        // Görselin sahneyi tamamen kaplamasını sağla (Aspect Fill gibi)
+        // görsel sahneyi kaplar. (Aspect Fill gibi)
         background.size = self.size
         background.aspectFillToSize(fillSize: self.size)
-        background.position = CGPoint.zero // Tam ortaya koy
-        background.zPosition = -10 // Her şeyin en arkasında dursun
+        background.position = CGPoint.zero // Tam orta
+        background.zPosition = -10 // en arkada
         addChild(background)
     }
     
-    func setupScoreLabel() {
+    func setupScoreLabel()
+    {
         scoreLabel = SKLabelNode(fontNamed: "Orbitron-Bold")
         scoreLabel.text = "0"
         scoreLabel.fontSize = 60
@@ -64,7 +69,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         addChild(scoreLabel)
     }
     
-    func createWalls() {
+    func createWalls()
+    {
         self.physicsBody = SKPhysicsBody(edgeLoopFrom: self.frame)
         self.physicsBody?.friction = 0.0
         self.physicsBody?.categoryBitMask = PhysicsCategories.ground
@@ -72,55 +78,68 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     func addPlayer()
     {
-            // Virüsün genişliğini 100 yaptık, artık kocaman ve net görünecek
+            // virüs genişliği (deneme)
             player = PlayerNode(imageNamed: "virus_player", width: 150)
             
             // Konumunu biraz daha yukarı alalım (y: -100) ki zemine tam otursun
             player?.position = CGPoint(x: -self.size.width / 3, y: -100)
             
-            if let playerNode = player {
+            if let playerNode = player
+            {
                 addChild(playerNode)
             }
-        }
-    func spawnObstacle() {
+    }
+    
+    func spawnObstacle()
+    {
         if isGameOver { return }
         
-        // --- DEĞİŞİKLİK BURADA: RASTGELE BOYUTLAR ---
+        // RASTGELE BOYUTLAR
+        
         // Genişlik: 150 ile 220 arasında değişsin (Bazen ince, bazen kalın)
         let obstacleWidth = CGFloat.random(in: 220...270)   //200 ile başladık 220-270 oldu bakalım.
         
-        // Yükseklik: 200 (Kısa) ile 450 (Çok Uzun) arasında değişsin.
+        
         // Eğer 450 gelirse ekranın yarısını geçer, seni mecburen diğer tarafa iter.
         let obstacleHeight = CGFloat.random(in: 380...670) //250->380 bakalım.
         
-        // Artık sabit sayıları değil, yukarıdaki random sayıları kullanıyoruz
+        
         let obstacle = ObstacleNode(imageNamed: "obstacle_crystal", width: obstacleWidth, height: obstacleHeight)
         
         // Sağ taraftan başlasın
         let startX = self.size.width / 2 + obstacleWidth
         
-        // --- MATEMATİKSEL SABİTLEME (Aynen Korundu) ---
+        // Ekrana bitişik engeller çıkması için:
+        let edgeOffset: CGFloat = 80 // 80 piksellik bir taşma payı
+        
+        
+        //  SABİTLEME
         let isTop = Bool.random()
         let yPos: CGFloat
         
-        if isTop {
-            // TAVAN: Hesaplamayı yeni 'obstacleHeight'a göre yapıyoruz
-            yPos = self.size.height / 2 - obstacleHeight / 2
-            
-            // Kristalin ucunun aşağı bakması için ters çevir
-            obstacle.zRotation = .pi
-        } else {
-            // ZEMİN: Hesaplamayı yeni 'obstacleHeight'a göre yapıyoruz
-            yPos = -self.size.height / 2 + obstacleHeight / 2
+        if isTop
+        {
+                    // TAVAN:
+                    // Normal Konum + edgeOffset (Yukarı it)
+                    yPos = (self.size.height / 2 - obstacleHeight / 2) + edgeOffset
+                    
+                    obstacle.zRotation = .pi // Kristalin ucu aşağı baksın
+        }
+        else
+        {
+                    // ZEMİN:
+                    // Normal Konum - edgeOffset (Aşağı it)
+                    yPos = (-self.size.height / 2 + obstacleHeight / 2) - edgeOffset
         }
         
         obstacle.position = CGPoint(x: startX, y: yPos)
         addChild(obstacle)
         
-        // Hız sabiti (İstersen burayı da random yapabilirsin ama şimdilik kalsın)
+        // Hız sabiti ( şimdilik sabit, daha sonra değişecek.)
         let moveLeft = SKAction.moveBy(x: -(self.size.width + obstacleWidth * 2), y: 0, duration: 3.5)
         
-        let scoreAction = SKAction.run {
+        let scoreAction = SKAction.run
+        {
             if !self.isGameOver { self.score += 1 }
         }
         
@@ -133,7 +152,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     func spawnObstacle() {
             if isGameOver { return }
             
-            // Görseli büyük tutuyoruz
+            // Görseli büyük tut
             let obstacleWidth: CGFloat = 200
             let obstacleHeight: CGFloat = 360 // Biraz daha uzattım ki ekranı iyice kaplasın
             
@@ -142,8 +161,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             // Sağ taraftan başlasın
             let startX = self.size.width / 2 + obstacleWidth
             
-            // --- MATEMATİKSEL SABİTLEME ---
-            let isTop = Bool.random()
+             let isTop = Bool.random()
             let yPos: CGFloat
             
             if isTop {
@@ -172,8 +190,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             obstacle.run(SKAction.sequence([moveLeft, scoreAction, remove]))
         }
     */
-    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        if isGameOver {
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?)
+    {
+        if isGameOver
+        {
             restartGame()
             return
         }
@@ -188,19 +208,22 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         player?.physicsBody?.applyImpulse(CGVector(dx: 0, dy: physicsWorld.gravity.dy * 2))
     }
     
-    func didBegin(_ contact: SKPhysicsContact) {
+    func didBegin(_ contact: SKPhysicsContact)
+    {
         let collision = contact.bodyA.categoryBitMask | contact.bodyB.categoryBitMask
-        if collision == (PhysicsCategories.player | PhysicsCategories.obstacle) {
+        if collision == (PhysicsCategories.player | PhysicsCategories.obstacle)
+        {
             triggerGameOver()
         }
     }
     
-    func triggerGameOver() {
+    func triggerGameOver()
+    {
             if isGameOver { return }
             
             isGameOver = true
             
-            // 1. Oyuncuyu Öldür (Efektler)
+            // 1. virüsü öldür (efektler)
             player?.color = .red
             player?.colorBlendFactor = 0.8
             player?.physicsBody?.velocity = CGVector(dx: 0, dy: 0) // Dondur
@@ -220,7 +243,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             // Dikdörtgen şekli (Rounded Rect)
             let gameOverBox = SKShapeNode(rectOf: CGSize(width: boxWidth, height: boxHeight), cornerRadius: cornerRadius)
             
-            // Tasarım Özellikleri (CSS gibi düşün)
+            // Tasarım Özellikleri (CSS)
             gameOverBox.fillColor = UIColor.black.withAlphaComponent(0.85) // %85 Koyu Siyah Arka Plan
             gameOverBox.strokeColor = .black // Çerçeve rengi
             gameOverBox.lineWidth = 2 // Çerçeve kalınlığı
@@ -234,16 +257,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             gameOverBox.setScale(0)
             gameOverBox.run(SKAction.scale(to: 1.0, duration: 0.3))
             
-            // 3. Başlık: SYSTEM FAILURE (Kutunun içine ekliyoruz)
+            //   SYSTEM FAILURE (Kutunun içine ekliyoruz)
             let titleLabel = SKLabelNode(fontNamed: "Orbitron-Bold") // Yoksa "AvenirNext-Bold"
             titleLabel.text = "SYSTEM FAILURE"
             titleLabel.fontSize = 32
-            titleLabel.fontColor = .red // İstediğin kırmızı renk
+            titleLabel.fontColor = .red
             titleLabel.position = CGPoint(x: 0, y: 60) // Kutunun içinde yukarıda
             titleLabel.zPosition = 51
             gameOverBox.addChild(titleLabel) // Sahneye değil, KUTUYA ekliyoruz
             
-            // 4. Skorlar: Data Stolen (Kutunun içine)
+            //  Data Stolen (Kutunun içine) -skor-
             let highScore = UserDefaults.standard.integer(forKey: "HighScore")
             if score > highScore {
                 UserDefaults.standard.set(score, forKey: "HighScore")
@@ -252,7 +275,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             let scoreLabel = SKLabelNode(fontNamed: "Orbitron-Regular") // Yoksa "AvenirNext-Bold"
             scoreLabel.text = "Data Stolen: \(score)"
             scoreLabel.fontSize = 22
-            scoreLabel.fontColor = .cyan // İstediğin mavi renk
+            scoreLabel.fontColor = .cyan
             scoreLabel.position = CGPoint(x: 0, y: 10) // Başlığın altında
             scoreLabel.zPosition = 51
             gameOverBox.addChild(scoreLabel)
@@ -280,8 +303,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             gameOverBox.addChild(restartLabel)
         }
     
-    func restartGame() {
-        if let view = self.view {
+    func restartGame()
+    {
+        if let view = self.view
+        {
             let newScene = GameScene(size: self.size)
             newScene.scaleMode = self.scaleMode
             let transition = SKTransition.fade(withDuration: 0.5)
@@ -289,13 +314,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
-    override func update(_ currentTime: TimeInterval) {
+    override func update(_ currentTime: TimeInterval)
+    {
         if isGameOver { return }
         if lastUpdateTime == 0 { lastUpdateTime = currentTime }
         let deltaTime = currentTime - lastUpdateTime
         lastUpdateTime = currentTime
         timeSinceLastSpawn += deltaTime
-        if timeSinceLastSpawn > obstacleSpawnRate {
+        if timeSinceLastSpawn > obstacleSpawnRate
+        {
             spawnObstacle()
             timeSinceLastSpawn = 0
         }

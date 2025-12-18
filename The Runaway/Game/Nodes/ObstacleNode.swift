@@ -15,14 +15,14 @@ class ObstacleNode: SKSpriteNode {
     
     init(imageNamed: String, width: CGFloat, height: CGFloat) {
         let texture = SKTexture(imageNamed: imageNamed)
-        let size = CGSize(width: width, height: height) // GÖRSEL BOYUT (Devasa)
+        let size = CGSize(width: width, height: height) // GÖRSEL BOYUT
         
         super.init(texture: texture, color: .clear, size: size)
         
          
-        // Görsel ne kadar büyük olursa olsun, çarpışma kutusunu daraltıyoruz.
-        // width * 0.4 -> Görselin genişliğinin sadece %40'ı kadar katı olsun.
-        // height * 0.9 -> Boydan da azıcık kısalttım.
+        // Görsel ne kadar büyük olursa olsun, çarpışma kutusunu daralt.
+        // width * 0.4 -> Görselin genişliğinin sadece %40'ı kadar.
+        // height * 0.9
         let hitboxSize = CGSize(width: width * 0.2, height: height * 0.8) // 0.4->0.2 , 0.9->0.8
         
         // Fizik gövdesini görsel boyuta (size) göre değil, bu yeni hitboxSize'a göre kuruyoruz

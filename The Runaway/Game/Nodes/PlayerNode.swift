@@ -10,9 +10,11 @@ import Foundation
 
 import SpriteKit
 
-class PlayerNode: SKSpriteNode {
+class PlayerNode: SKSpriteNode
+{
     
-    init(imageNamed: String, width: CGFloat) {
+    init(imageNamed: String, width: CGFloat)
+    {
         let texture = SKTexture(imageNamed: imageNamed)
         
         // 1. GÖRSEL BOYUT (Gözün gördüğü)
@@ -21,17 +23,18 @@ class PlayerNode: SKSpriteNode {
         
         super.init(texture: texture, color: .clear, size: visualSize)
         
-        // 2. FİZİKSEL BOYUT (Oyunun gördüğü)
-        // Burayı görselden tamamen bağımsız, elle yazıyoruz.
-        // Görsel 120 olsa bile, buraya 30 yazarsak, hitbox küçücük kalır.
-         let hitboxSize = CGSize(width: 40, height: 60) // genişlik önemli değil ama yükseklik önemli. 60 iyi.
+        // 2. FİZİKSEL BOYUT
         
-        // İPUCU: Virüs yuvarlak olduğu için kare yerine "Daire" (Circle) kullanırsak
-        // köşelerden çarpma riski daha da azalır.
-        // self.physicsBody = SKPhysicsBody(circleOfRadius: 32) // 2xYarıçap  = Genişlik. yuvarlak yapınca altlarından geçebiliyor. dikdörtgen olarak ayarlayacağım.
+        // Görsel 120 olsa bile, buradan hitboxı küçült.
+        // let hitboxSize = CGSize(width: 40, height: 60) // genişlik önemli değil ama yükseklik önemli. 60 iyi.
         
-        // Eğer kare kalsın istiyorsan üstteki satırı sil, bunu aç:
-        self.physicsBody = SKPhysicsBody(rectangleOf: hitboxSize)
+        
+        // circle kullanırsak köşelerden çarpma riski daha da azalır.
+        
+        self.physicsBody = SKPhysicsBody(circleOfRadius: 27) // 2xYarıçap  = Genişlik. yuvarlak yapınca altlarından geçebiliyor. dikdörtgen olarak ayarlayacağım.
+        
+        // Kare kalması için alttaki line'ı aktif et, üsttekini comment'e al.
+        //self.physicsBody = SKPhysicsBody(rectangleOf: hitboxSize)
         
         self.physicsBody?.isDynamic = true
         self.physicsBody?.allowsRotation = false
@@ -47,7 +50,8 @@ class PlayerNode: SKSpriteNode {
         self.zPosition = 2
     }
     
-    required init?(coder aDecoder: NSCoder) {
+    required init?(coder aDecoder: NSCoder)
+    {
         fatalError("init(coder:) has not been implemented")
     }
 }
