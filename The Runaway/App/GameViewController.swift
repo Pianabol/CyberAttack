@@ -36,8 +36,8 @@ class GameViewController: UIViewController
 
             view.presentScene(scene)
             
-            //şimdilik bi engelleri görünür yap.
-            view.showsPhysics = true
+            //şimdilik bi engelleri görünür yap. artık gerek kalmadı.
+            view.showsPhysics = false
             
             view.ignoresSiblingOrder = true
             

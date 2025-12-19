@@ -16,6 +16,8 @@ class PlayerNode: SKSpriteNode
     init(imageNamed: String, width: CGFloat)
     {
         let texture = SKTexture(imageNamed: imageNamed)
+        // deneme :
+        texture.filteringMode = .nearest
         
         // 1. GÖRSEL BOYUT (Gözün gördüğü)
         // Burası dışarıdan gelen 'width' değerini kullanır (Örn: 120)

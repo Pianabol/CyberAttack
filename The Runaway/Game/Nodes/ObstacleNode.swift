@@ -17,6 +17,9 @@ class ObstacleNode: SKSpriteNode {
         let texture = SKTexture(imageNamed: imageNamed)
         let size = CGSize(width: width, height: height) // GÖRSEL BOYUT
         
+        //görüntüyü netleştirmek için deneme:
+        texture.filteringMode = .nearest
+        
         super.init(texture: texture, color: .clear, size: size)
         
          

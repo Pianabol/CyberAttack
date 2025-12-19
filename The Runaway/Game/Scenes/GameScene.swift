@@ -8,6 +8,7 @@
 // bu versiyona, game over eklendi, ve çalışırsa eğer restart modu geldi. hadi bakalım.
 // bu versiyona skor eklendi, yüksek skor kayıt ediliyor. Yeni rekor, yeni yüksek rekor ve kayıtlı.
 // arka plan ve engellere görsel eklendi, ayrıca karakterimiz için bir icon getirildi.
+// bu versiyonda oyuna, gittikçe zorlaşan bir tasarım eklendi. Yer çekimi (karakter hızı) da artıyor gittikçe, engellerin geliş hızı da artıyor, spawn oluş hızı da.
 
 import SpriteKit
 import GameplayKit
@@ -24,27 +25,66 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         didSet
         {
             scoreLabel.text = "\(score)"
+            adjustDifficulty() // yeni zorluk sistemi
         }
     }
     
+    var moveDuration: TimeInterval = 4.0
+    var obstacleSpawnRate: TimeInterval = 2.0
+    
     var lastUpdateTime: TimeInterval = 0
-    var obstacleSpawnRate: TimeInterval = 1.5
+    // var obstacleSpawnRate: TimeInterval = 1.5 // git gide zorlaşan hale dönüşecek.
+    
+    
+    
     var timeSinceLastSpawn: TimeInterval = 0
     
     override func didMove(to view: SKView)
     {
         self.anchorPoint = CGPoint(x: 0.5, y: 0.5)
         // Siyah arka plan satırını sildik!
-        
+         // score = 0
+        moveDuration = 4.0                  //her oyunbaşında hızı sıfırla
         createBackground() // YENİ: Arka plan görselini ekle
+        obstacleSpawnRate = 2.0
         
         physicsWorld.contactDelegate = self
+        // yer çekimini başa döndür
         physicsWorld.gravity = CGVector(dx: 0, dy: -12.0)
         
         createWalls()
         addPlayer()
         setupScoreLabel()
     }
+    
+    func adjustDifficulty()
+    {
+            // Hızlanma formülü
+            // Başlangıç hızı (4.0) - (Skor * 0.05)
+       
+            // max(1.2, ...) Oyun asla 1.2 saniyeden daha hızlı olamaz. yoksa çok zor olur.
+            
+            let newDuration = 4.0 - (Double(score) * 0.05)
+            moveDuration = max(1.2, newDuration)
+            
+            // Hızlandıkça engellerin geliş sıklığını da artır. daha da zorlaştır.
+            // Hareket hızının yarısı kadar sürede bir engel at.
+            obstacleSpawnRate = moveDuration / 1.8
+        
+            // oyun ilerledikçe karakterin hızı da artacak
+            let baseGravity: CGFloat = 12.0
+            let extraGravity = CGFloat(score) * 0.35 // 0.2 -> 0.5 -> 0.35
+            let newGravityMagnitude = min(35.0, baseGravity + extraGravity) // 22.0 -> 35.0
+        
+            //yer çekim yönünü koru:
+            let currentSign: CGFloat = physicsWorld.gravity.dy > 0 ? 1.0 : -1.0
+        
+            physicsWorld.gravity = CGVector(dx: 0, dy: newGravityMagnitude * currentSign)
+           // Konsol output hız takibi (Debug için)
+           // print("Skor: \(score) | Hız: \(moveDuration) | Sıklık: \(obstacleSpawnRate)")
+           // print("Skor: \(score) | Yerçekimi Gücü: \(newGravityMagnitude)")
+            
+        }
     
     func createBackground()
     {
@@ -101,7 +141,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         
         // Eğer 450 gelirse ekranın yarısını geçer, seni mecburen diğer tarafa iter.
-        let obstacleHeight = CGFloat.random(in: 380...670) //250->380 bakalım.
+        let obstacleHeight = CGFloat.random(in: 380...570) //250->380 bakalım.670->570
+        //test için düşük değerler.
         
         
         let obstacle = ObstacleNode(imageNamed: "obstacle_crystal", width: obstacleWidth, height: obstacleHeight)
@@ -136,7 +177,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         addChild(obstacle)
         
         // Hız sabiti ( şimdilik sabit, daha sonra değişecek.)
-        let moveLeft = SKAction.moveBy(x: -(self.size.width + obstacleWidth * 2), y: 0, duration: 3.5)
+        let moveLeft = SKAction.moveBy(x: -(self.size.width + obstacleWidth * 2), y: 0, duration: moveDuration) //3.5 -> moveDuration
         
         let scoreAction = SKAction.run
         {
@@ -233,7 +274,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 node.removeAllActions()
             }
             
-            // --- YENİ "DIV" TASARIMI BAŞLIYOR ---
+             
             
             // 2. Kutu (Div) Oluşturma
             let boxWidth: CGFloat = 320
